@@ -34,13 +34,13 @@ silhouettes <- function(raw_df, min_kn, max_kn) {
 # silhouette coefficients are determined for every run
 # density of silhouette coefficients is plotted and mean, median, mode computed in the end
 silhouettes1 <- function(df, n_iter, clust_no) {
-  
+  range_silhouettes1 <- seq(1, n_iter, by=1)
   df_pca  <- data.frame()
   clustm <- c("kmeans", "pam","agnes", "clara", "diana")
   x <- numeric()
   
-  for (method in clustm) {
-    for (i in 1:n_iter) {
+  foreach (i = clustm) %dopar% {
+    foreach (i = range_silhouettes1) %dopar% {
       tsne_df <- tsne_transform(df, region_analysed, perplexity = 10, max_iter = 10000, seed = i,
                                 full_name = FALSE)
       
