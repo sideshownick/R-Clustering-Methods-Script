@@ -13,6 +13,7 @@ library(plyr)         #used to calc mean for df
 library(rlist)        #for appending lists
 
 
+#TESTING GITHUB FUNCTIONALITY
 #----@@@@@@@@@@@----RUNNING SCRIPT ----@@@@@@@@@@@@@@@@@@@@
 
 #set current folder as your working directory
@@ -44,7 +45,7 @@ dir.create(file.path(direction), showWarnings = FALSE)
 range_def <- seq(6, 10, by=1)
 
 #defining the number of iterations to be performed
-no_iterations = 1000
+no_iterations = 4
 
 # ---- FUNCTION TO EXTRACT DATA POINTS FOR SILHOUETTE COEFFICIENTS ------
 # also saves mean median and mode into a csv file, for reference
