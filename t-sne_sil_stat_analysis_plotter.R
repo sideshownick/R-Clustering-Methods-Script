@@ -8,6 +8,7 @@ library(RColorBrewer) #used for color palettes for ggplot
 library(ggthemr)      #theme for plotting in ggplot
 library(ggthemes)     #theme for plotting in ggplot
 library(plyr)         #used to calc mean for df
+
 library(rlist)        #for appending lists
 
 
@@ -15,11 +16,16 @@ library(rlist)        #for appending lists
 
 region_analysed = "Bath and North East Somerset"
 # ----- READ THE RDS FILE AND MANAGE PLOTTING OF RESULTS ----- 
-list1 <- list()
-for (i in range_def){
-  list1 <- list.append(list1,readRDS(file = sprintf("./tsne_sil_stat_analysis_%s/%.0f_cl - tsne sil_coeff.rds", region_analysed,i)))
-}
+
+list1 <- readRDS(file = sprintf("./tsne_sil_stat_analysis_%s/tsne sil_coeff.rds", region_analysed))
+
 list1
+
+#########################################################################################################
+#EDIT THE READING OF LIST1 for plotting capabilities
+#########################################################################################################
+
+
 
 #plotting for comparison of silhouette coefficients on multiple runs of tsne dim red algorithm
 axis_text_size = 8
@@ -107,4 +113,3 @@ library(grid)
 m_plots <- grid.arrange(grobs = myplots, ncol=2, nrow=(length(myplots)/2)) #, top = textGrob(paste(dim_red_method,region_analysed, "-", nclust, "clusters"), gp=gpar(fontsize=20,font=8)))
 ggsave(filename = sprintf("./tsne_sil_stat_analysis_%s/t-sne clustering stat analysis summary.pdf",region_analysed), 
        plot = m_plots, width = plot_width, height = plot_height, units = "mm")
-

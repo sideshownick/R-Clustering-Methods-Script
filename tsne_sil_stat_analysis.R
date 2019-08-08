@@ -1,24 +1,13 @@
-rm(list=ls()) # to clean the environment
+#rm(list=ls()) # to clean the environment
 
-#install.packages("foreach")
-#install.packages("doParallel")
+# install.packages("doSNOW")
+# install.packages("doParallel") 
+# install.packages("doMPI")
 
-
-#LIBRARIES USED IN THIS SCRIPT
-library(ggplot2)      #used for ggplot
-library(ggpubr)       #used for ggarrange
-library(factoextra)   #used for eclust function
-require(gridExtra)    #used for grid.arrange
 library(Rtsne)        #used for t-SNE algorithm
-library(RColorBrewer) #used for color palettes for ggplot
-library(ggthemr)      #theme for plotting in ggplot
-library(ggthemes)     #theme for plotting in ggplot
-library(plyr)         #used to calc mean for df
-library(rlist)        #for appending lists
-library(parallel) #detects number of cores in the system
-
-library(doParallel)
-library(foreach)
+library(factoextra)   # used for clustering algorithms
+library(doParallel)   # parallelised scripting
+library(foreach)      # for each parallelised loops
 
 
 #TESTING GITHUB FUNCTIONALITY
@@ -36,23 +25,52 @@ region_analysed = "Bath and North East Somerset"
 direction <- sprintf("./tsne_sil_stat_analysis_%s", region_analysed)
 dir.create(file.path(direction), showWarnings = FALSE) 
 
+
 df_selection <- region_selector(region_analysed)
 
 
 #defining range for number of clusters
-range_def <- seq(6, 8, by=1)
+range_def <- seq(6, 10, by=1)
 
-#defining the number of iterations to be performed
-no_iterations = 4
+#define range for numbe of iterations by specifying different seeds
+seed_range <- seq(1,10,by=1)
 
+#clustering methods definition
+clustm <- c("kmeans", "pam","agnes", "clara", "diana")
+
+
+# Setting up parallelised script running
 numCores <- detectCores() # detects how many cores the system has
-registerDoParallel(numCores)  # use multicore, set to the number of our cores
 
-# Return a vector
+cl <- makeCluster(numCores[1]-1) #not to overload the computer
+registerDoParallel(cl)
+
+
+
 system.time({
-foreach (i=range_def) %dopar% {
-  df_mc <- silhouettes1(df_selection,no_iterations,i)
-  saveRDS(df_mc,file = sprintf("./tsne_sil_stat_analysis_%s/%.0f_cl - tsne sil_coeff.rds", region_analysed,i))
-}
+df_tsne_sil_stat <- foreach (clust_no = range_def, .combine = rbind)%:% #no of clusters
+                    foreach(method = clustm, .combine = rbind) %:% #5 methods
+                    foreach (i = seed_range, .combine = rbind, .packages=c('Rtsne','factoextra')) %dopar% { #a lot of iterations
+                      tsne_df <- tsne_transform(df_selection, region_analysed, perplexity = 10, max_iter = 10000, seed = i,
+                                                full_name = FALSE)
+                      clust.res <- eclust(tsne_df, method, k=clust_no, graph = FALSE)
+                      clust.sil <- fviz_silhouette(clust.res, ggtheme = theme_minimal())
+                      sil_title <- clust.sil$labels$title
+                      sil_coeff <- as.numeric(unlist(regmatches(sil_title,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",sil_title))))
+                      df_pca <- data.frame(method, clust_no, sil_coeff)
+                      return(df_pca)
+                    }
 })
+stopImplicitCluster() # clean up the cluster
+
+df_tsne_sil_stat$method <- as.character(df_tsne_sil_stat$method)
+df_tsne_sil_stat$clust_no <-as.numeric(as.character(df_tsne_sil_stat$clust_no))
+df_tsne_sil_stat$sil_coeff <-as.double(as.character(df_tsne_sil_stat$sil_coeff))
+
+saveRDS(df_tsne_sil_stat,file = sprintf("./tsne_sil_stat_analysis_%s/tsne sil_coeff.rds", region_analysed))
+
+
+
+
+
 

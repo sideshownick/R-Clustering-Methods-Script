@@ -1,4 +1,5 @@
-
+library(Rtsne)    
+#library(factoextra)   #used for eclust function
 
 #---------FUNCTION FOR EXTRACTING SILHOUETTE COEFFICIENTS---------------
 # this function is designed to extract silhouette coefficients
@@ -13,38 +14,6 @@ silhouettes <- function(raw_df, min_kn, max_kn) {
   for (method in clustm) {
     for (clust_no in min_kn:max_kn) {
       clust.res <- eclust(raw_df, method, k=clust_no, graph = FALSE)
-      clust.sil <- fviz_silhouette(clust.res, ggtheme = theme_minimal())
-      sil_title <- clust.sil$labels$title
-      sil_coeff <- as.numeric(unlist(regmatches(sil_title,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",sil_title))))
-      x <- cbind(method, clust_no, sil_coeff)
-      df_pca <- rbind(df_pca,x)
-      x <- numeric()
-      #saveRDS(clust.res, file = sprintf("./Bath_PCA_rds_OUTPUTS/%s_%s_res_kn_%i.rds", region_analysed, i, j ))
-    }
-  }
-  
-  df_pca$method <- as.character(df_pca$method)
-  df_pca$clust_no <-as.numeric(as.character(df_pca$clust_no))
-  df_pca$sil_coeff <-as.double(as.character(df_pca$sil_coeff))
-  return(df_pca)
-}
-
-#---------STATISTICAL FUNCTION (MONTE CARLO)---------------
-# runs n amount of simulations by using a different seed every time for t-SNE 
-# silhouette coefficients are determined for every run
-# density of silhouette coefficients is plotted and mean, median, mode computed in the end
-silhouettes1 <- function(df, n_iter, clust_no) {
-  range_silhouettes1 <- seq(1, n_iter, by=1)
-  df_pca  <- data.frame()
-  clustm <- c("kmeans", "pam","agnes", "clara", "diana")
-  x <- numeric()
-  
-  foreach (i = clustm) %dopar% {
-    foreach (i = range_silhouettes1) %dopar% {
-      tsne_df <- tsne_transform(df, region_analysed, perplexity = 10, max_iter = 10000, seed = i,
-                                full_name = FALSE)
-      
-      clust.res <- eclust(tsne_df, method, k=clust_no, graph = FALSE)
       clust.sil <- fviz_silhouette(clust.res, ggtheme = theme_minimal())
       sil_title <- clust.sil$labels$title
       sil_coeff <- as.numeric(unlist(regmatches(sil_title,gregexpr("[[:digit:]]+\\.*[[:digit:]]*",sil_title))))
