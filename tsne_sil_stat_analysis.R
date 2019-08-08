@@ -1,17 +1,20 @@
 #rm(list=ls()) # to clean the environment
 
+#LIBRARIES TO BE INSTALLED IN CASE ERRORS APPEAR FOR PARALLELISED RUNNING
 # install.packages("doSNOW")
 # install.packages("doParallel") 
 # install.packages("doMPI")
 
+
+#NECESSARY LIBRARIES FOR THIS SCRIPT
 library(Rtsne)        #used for t-SNE algorithm
 library(factoextra)   # used for clustering algorithms
 library(doParallel)   # parallelised scripting
 library(foreach)      # for each parallelised loops
 
 
-#TESTING GITHUB FUNCTIONALITY
-#----@@@@@@@@@@@----RUNNING SCRIPT ----@@@@@@@@@@@@@@@@@@@@
+
+#---------------------RUNNING SCRIPT --------------------------------------
 
 #set current folder as your working directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
