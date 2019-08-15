@@ -19,6 +19,7 @@ region_analysed = "Bath and North East Somerset"
 
 list1 <- readRDS(file = sprintf("./tsne_sil_stat_analysis_%s/tsne sil_coeff.rds", region_analysed))
 
+list1 <- readRDS(file = "/Users/iura/Downloads/tsne\ sil_coeff.rds")
 list1
 
 #########################################################################################################
